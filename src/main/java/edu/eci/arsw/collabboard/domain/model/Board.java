@@ -1,8 +1,8 @@
 package edu.eci.arsw.collabboard.domain.model;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public record Board(String id, String name, List<BoardElement> elements) {
     public Board {
@@ -17,22 +17,29 @@ public record Board(String id, String name, List<BoardElement> elements) {
     }
 
     private static void validateConnectors(List<BoardElement> elements) {
-        Set<String> ids = new HashSet<>();
+        Map<String, BoardElement> byId = new HashMap<>();
         for (BoardElement element : elements) {
-            if (!ids.add(element.id())) {
+            if (byId.put(element.id(), element) != null) {
                 throw new IllegalArgumentException("Duplicate element id: " + element.id());
             }
         }
         for (BoardElement element : elements) {
-            if (element.type() == ElementType.CONNECTOR) {
-                if (!ids.contains(element.sourceId())) {
-                    throw new IllegalArgumentException(
-                            "Connector " + element.id() + " references missing sourceId: " + element.sourceId());
-                }
-                if (!ids.contains(element.targetId())) {
-                    throw new IllegalArgumentException(
-                            "Connector " + element.id() + " references missing targetId: " + element.targetId());
-                }
+            if (element.type() != ElementType.CONNECTOR) {
+                continue;
+            }
+            BoardElement source = byId.get(element.sourceId());
+            BoardElement target = byId.get(element.targetId());
+            if (source == null) {
+                throw new IllegalArgumentException(
+                        "Connector " + element.id() + " references missing sourceId: " + element.sourceId());
+            }
+            if (target == null) {
+                throw new IllegalArgumentException(
+                        "Connector " + element.id() + " references missing targetId: " + element.targetId());
+            }
+            if (source.type() == ElementType.CONNECTOR || target.type() == ElementType.CONNECTOR) {
+                throw new IllegalArgumentException(
+                        "Connector " + element.id() + " cannot reference another connector");
             }
         }
     }

@@ -32,4 +32,19 @@ class BoardConnectorTest {
         assertThrows(IllegalArgumentException.class, () ->
                 new Board("board-1", "Architecture Session", List.of(source, connector)));
     }
+
+    @Test
+    void shouldRejectConnectorReferencingAnotherConnector() {
+        BoardElement source = new BoardElement(
+                "el-1", ElementType.RECTANGLE, 0, 0, 100, 50, "A", null, null);
+        BoardElement target = new BoardElement(
+                "el-2", ElementType.RECTANGLE, 200, 0, 100, 50, "B", null, null);
+        BoardElement firstConnector = new BoardElement(
+                "conn-1", ElementType.CONNECTOR, 0, 0, 0, 0, "", "el-1", "el-2");
+        BoardElement connectorToConnector = new BoardElement(
+                "conn-2", ElementType.CONNECTOR, 0, 0, 0, 0, "", "el-1", "conn-1");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                new Board("board-1", "Architecture Session", List.of(source, target, firstConnector, connectorToConnector)));
+    }
 }
