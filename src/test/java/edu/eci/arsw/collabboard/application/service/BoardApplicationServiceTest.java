@@ -35,7 +35,7 @@ class BoardApplicationServiceTest {
     void shouldReplaceExistingBoardKeepingItsId() {
         Board created = service.createBoard("Architecture Session");
         BoardElement rectangle = new BoardElement(
-                "el-1", ElementType.RECTANGLE, 0, 0, 100, 50, "");
+                "el-1", ElementType.RECTANGLE, 0, 0, 100, 50, "", null, null);
 
         Board replaced = service.replaceBoard(
                 created.id(), "Renamed Session", List.of(rectangle));
@@ -48,7 +48,7 @@ class BoardApplicationServiceTest {
     @Test
     void shouldFailToReplaceWhenBoardDoesNotExist() {
         BoardElement rectangle = new BoardElement(
-                "el-1", ElementType.RECTANGLE, 0, 0, 100, 50, "");
+                "el-1", ElementType.RECTANGLE, 0, 0, 100, 50, "", null, null);
 
         assertThrows(BoardNotFoundException.class,
                 () -> service.replaceBoard("missing-board", "X", List.of(rectangle)));

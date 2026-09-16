@@ -7,7 +7,9 @@ public record BoardElement(
         double y,
         double width,
         double height,
-        String text
+        String text,
+        String sourceId,
+        String targetId
 ) {
     public BoardElement {
         if (id == null || id.isBlank()) {
@@ -20,5 +22,19 @@ public record BoardElement(
             throw new IllegalArgumentException("Element dimensions cannot be negative");
         }
         text = text == null ? "" : text;
+
+        if (type == ElementType.CONNECTOR) {
+            if (sourceId == null || sourceId.isBlank()) {
+                throw new IllegalArgumentException("Connector sourceId is required");
+            }
+            if (targetId == null || targetId.isBlank()) {
+                throw new IllegalArgumentException("Connector targetId is required");
+            }
+            if (sourceId.equals(targetId)) {
+                throw new IllegalArgumentException("Connector sourceId and targetId must be different");
+            }
+        } else if (sourceId != null || targetId != null) {
+            throw new IllegalArgumentException("Only CONNECTOR elements may define sourceId/targetId");
+        }
     }
 }
