@@ -7,9 +7,10 @@ import java.util.Optional;
 /**
  * Output port owned by the application boundary.
  *
- * TODO LAB-04:
- * Review whether these operations are the minimum required by the use cases.
- * Do not add framework-specific abstractions here.
+ * These three operations are the minimum the use cases need: save (upsert),
+ * findById (get) and existsById (so replace can reject an unknown board
+ * without loading it). No framework-specific abstraction belongs here — the
+ * boundary and its trade-offs are documented in docs/ADR-001-repository-boundary.md.
  */
 public interface BoardRepository {
     Board save(Board board);
