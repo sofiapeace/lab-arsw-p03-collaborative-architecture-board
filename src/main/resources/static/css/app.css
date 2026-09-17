@@ -15,6 +15,12 @@ main { padding: 18px 24px; }
 svg { width: 100%; height: 600px; background: white; border: 1px solid #afc2d3; border-radius: 10px; }
 .shape { cursor: move; }
 .selected { stroke: #245781 !important; stroke-width: 4 !important; }
-.label { pointer-events: none; user-select: none; }
+/* Labels must stay clickable: a TEXT element is only its <text> node, so
+   pointer-events:none here would make TEXT impossible to select/move/connect.
+   A click on a label still resolves to its parent [data-id] group. */
+.label { user-select: none; }
+/* .selected draws a thick stroke, which is right for a rect but illegible on
+   a glyph — a selected TEXT is highlighted by color/weight instead. */
+text.selected { stroke: none !important; fill: #245781 !important; font-weight: 700; }
 .connector { stroke: #596b7b; stroke-width: 2; }
 footer { padding: 10px 24px; color: #667; }

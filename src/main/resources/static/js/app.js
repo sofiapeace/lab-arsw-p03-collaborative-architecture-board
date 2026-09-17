@@ -27,24 +27,28 @@ function refresh(message = '') {
   $('boardName').value = s.board.name;
 }
 
+// `action` must both call the API and apply its result to the state, so that
+// Retry re-runs the complete operation (request + apply) and not just the
+// request. It returns the success message to show.
 async function remote(label, action) {
   // Prevent incompatible actions while loading/saving: if a remote call is
   // already in flight, ignore a new trigger instead of racing two requests
   // against the same board. Buttons are also disabled in refresh() as the
   // primary defense; this is the defense-in-depth check.
-  if (state.snapshot().remote.status === 'loading') return undefined;
+  if (state.snapshot().remote.status === 'loading') return;
 
   state.setRemote('loading', action, null);
   refresh(`${label}...`);
   try {
-    const result = await action();
+    const message = await action();
     state.setRemote('success', null, null);
-    refresh(`${label} OK`);
-    return result;
+    refresh(message ?? `${label} OK`);
   } catch (error) {
+    // Handled here on purpose: the error is already part of the state and is
+    // shown by refresh(), so it must not be rethrown into an event handler
+    // (that produced an "Uncaught (in promise)" on every failed operation).
     state.setRemote('error', action, error);
     refresh();
-    throw error;
   }
 }
 
@@ -60,23 +64,32 @@ view.on({
   }
 });
 
-$('newBoardBtn').onclick = async () => {
-  const b = await remote('Creating', () => BoardApiClient.create($('boardName').value.trim()));
-  if (b) { state.setBoard(b); refresh('Board created'); }
+// Each remote action reads its inputs once, when the button is clicked, so a
+// later Retry repeats the same operation even if the inputs changed meanwhile.
+$('newBoardBtn').onclick = () => {
+  const name = $('boardName').value.trim();
+  remote('Creating', async () => {
+    state.setBoard(await BoardApiClient.create(name));
+    return 'Board created';
+  });
 };
-$('loadBtn').onclick = async () => {
+$('loadBtn').onclick = () => {
   const id = $('boardId').value.trim();
-  const b = await remote('Loading', () => BoardApiClient.load(id));
-  if (b) { state.setBoard(b); refresh('Board loaded'); }
+  remote('Loading', async () => {
+    state.setBoard(await BoardApiClient.load(id));
+    return 'Board loaded';
+  });
 };
-$('saveBtn').onclick = async () => {
+$('saveBtn').onclick = () => {
   state.setName($('boardName').value.trim());
-  const b = await remote('Saving', () => BoardApiClient.save(state.toPersistedBoard()));
-  if (b) { state.setBoard(b); refresh('Board saved'); }
+  remote('Saving', async () => {
+    state.setBoard(await BoardApiClient.save(state.toPersistedBoard()));
+    return 'Board saved';
+  });
 };
-$('retryBtn').onclick = async () => {
+$('retryBtn').onclick = () => {
   const action = state.snapshot().remote.lastAction;
-  if (action) await remote('Retrying', action);
+  if (action) remote('Retrying', action);
 };
 $('addRectBtn').onclick = () => { state.addRectangle(); refresh('Rectangle added locally'); };
 $('addTextBtn').onclick = () => { state.addText(); refresh('Text added locally'); };
