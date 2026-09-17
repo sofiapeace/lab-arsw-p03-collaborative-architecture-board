@@ -22,9 +22,16 @@ function refresh(message = '') {
   const isBusy = s.remote.status === 'loading';
   ACTION_BUTTON_IDS.forEach(id => { $(id).disabled = isBusy; });
   $('retryBtn').disabled = isBusy;
+}
 
-  $('boardId').value = s.board.id ?? $('boardId').value;
-  $('boardName').value = s.board.name;
+// The id and name fields belong to the user while they type, so refresh()
+// never touches them. They are only rewritten when a board actually arrives
+// from the server (New / Load / Save), which is where they become stale —
+// before this, a local action such as "+ Rectangle" wiped a boardId being
+// typed, because every render pushed the current state back into the inputs.
+function showBoardInputs(board) {
+  $('boardId').value = board.id;
+  $('boardName').value = board.name;
 }
 
 // `action` must both call the API and apply its result to the state, so that
@@ -69,21 +76,27 @@ view.on({
 $('newBoardBtn').onclick = () => {
   const name = $('boardName').value.trim();
   remote('Creating', async () => {
-    state.setBoard(await BoardApiClient.create(name));
+    const board = await BoardApiClient.create(name);
+    state.setBoard(board);
+    showBoardInputs(board);
     return 'Board created';
   });
 };
 $('loadBtn').onclick = () => {
   const id = $('boardId').value.trim();
   remote('Loading', async () => {
-    state.setBoard(await BoardApiClient.load(id));
+    const board = await BoardApiClient.load(id);
+    state.setBoard(board);
+    showBoardInputs(board);
     return 'Board loaded';
   });
 };
 $('saveBtn').onclick = () => {
   state.setName($('boardName').value.trim());
   remote('Saving', async () => {
-    state.setBoard(await BoardApiClient.save(state.toPersistedBoard()));
+    const board = await BoardApiClient.save(state.toPersistedBoard());
+    state.setBoard(board);
+    showBoardInputs(board);
     return 'Board saved';
   });
 };
