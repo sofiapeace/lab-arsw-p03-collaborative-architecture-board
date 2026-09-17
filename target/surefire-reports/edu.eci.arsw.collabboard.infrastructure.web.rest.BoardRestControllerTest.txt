@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: edu.eci.arsw.collabboard.infrastructure.web.rest.BoardRestControllerTest
--------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 29.39 s -- in edu.eci.arsw.collabboard.infrastructure.web.rest.BoardRestControllerTest
