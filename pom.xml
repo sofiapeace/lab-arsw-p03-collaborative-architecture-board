@@ -30,6 +30,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        <!-- Lab #6: STOMP over WebSocket. Brings spring-websocket and
+             spring-messaging so the simple in-memory broker can relay
+             BoardEvents; REST keeps using spring-boot-starter-web. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
