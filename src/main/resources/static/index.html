@@ -1,19 +1,33 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ARSW Collaborative Board</title><link rel="stylesheet" href="/css/app.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ARSW Collaborative Board</title><link rel="stylesheet" href="/css/app.css">
+<!-- Classic script, not a module, and loaded before app.js: BoardRealtimeClient
+     reads window.Stomp, which only exists once this has run. Served by Spring
+     Boot from the stomp-websocket webjar declared in pom.xml, so the app needs
+     no internet access. -->
+<script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script></head>
 <body>
-<header><div><h1>ARSW Collaborative Architecture Board</h1><p>Lab #5 — Interactive Board</p></div><div id="remoteStatus" class="status">idle</div></header>
+<header>
+  <div><h1>ARSW Collaborative Architecture Board</h1><p>Lab #6 — Real-Time Collaboration</p></div>
+  <div class="status-stack"><span>REST: <strong id="remoteStatus">idle</strong></span><span>LIVE: <strong id="liveStatus">disconnected</strong></span></div>
+</header>
 <section class="board-bar">
   <input id="boardName" value="Architecture Board" aria-label="Board name">
   <button id="newBoardBtn">New</button>
   <input id="boardId" placeholder="boardId" aria-label="Board id">
-  <button id="loadBtn">Load</button><button id="saveBtn">Save</button><button id="retryBtn" hidden>Retry</button>
+  <button id="loadBtn">Load</button><button id="saveBtn">Save snapshot</button><button id="retryBtn" hidden>Retry</button>
+</section>
+<section class="live-bar">
+  <button id="connectLiveBtn" disabled>Connect live</button>
+  <button id="disconnectLiveBtn" disabled>Disconnect</button>
+  <span>Actor: <code id="actorId"></code></span>
+  <span class="route">SEND /app/boards/{boardId}/events · SUBSCRIBE /topic/boards/{boardId}</span>
 </section>
 <section class="toolbar">
   <button id="addRectBtn">+ Rectangle</button><button id="addTextBtn">+ Text</button><button id="connectBtn">Connect selected + next</button><button id="deleteBtn">Delete selected</button>
 </section>
 <div id="message" class="message" role="status"></div>
 <main><svg id="boardCanvas" viewBox="0 0 1000 600" tabindex="0" aria-label="Collaborative board canvas"></svg></main>
-<footer>Lab #5 keeps persistence on REST. WebSocket collaboration arrives in Lab #6.</footer>
+<footer>REST bootstraps and snapshots the Board. STOMP carries live interaction. Simultaneous-update consistency is deferred to Lab #7.</footer>
 <script type="module" src="/js/app.js"></script>
 </body></html>

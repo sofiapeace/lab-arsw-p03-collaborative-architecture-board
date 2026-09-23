@@ -3,8 +3,15 @@ body { font-family: system-ui, sans-serif; margin: 0; background: #f4f7fa; color
 header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: #173a63; color: white; }
 header h1 { margin: 0; font-size: 24px; }
 header p { margin: 4px 0 0; opacity: .85; }
-.status { padding: 7px 12px; border-radius: 999px; background: #ffffff22; }
-.board-bar, .toolbar { display: flex; gap: 8px; align-items: center; padding: 12px 24px; background: white; border-bottom: 1px solid #d8e0e8; }
+.board-bar, .toolbar, .live-bar { display: flex; gap: 8px; align-items: center; padding: 12px 24px; background: white; border-bottom: 1px solid #d8e0e8; }
+/* Lab #6: the live channel is a separate concern from REST bootstrap, so it
+   gets its own bar instead of being mixed into the board toolbar. */
+.live-bar { background: #eef4f9; flex-wrap: wrap; }
+.live-bar code { background: white; border: 1px solid #d8e0e8; border-radius: 5px; padding: 2px 6px; }
+/* The destinations are shown on screen so the STOMP contract is visible during
+   the demo without opening the browser console. */
+.live-bar .route { margin-left: auto; color: #5a6b7c; font-size: 13px; }
+.status-stack { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; font-size: 14px; }
 .board-bar input { padding: 8px; min-width: 220px; }
 .board-bar #boardId { flex: 1; }
 button { padding: 8px 12px; border: 1px solid #9db2c6; border-radius: 7px; background: white; cursor: pointer; }

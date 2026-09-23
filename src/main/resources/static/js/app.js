@@ -1,27 +1,74 @@
 import {BoardApiClient} from './api/board-api-client.js';
 import {createBoardState} from './state/board-state.js';
 import {createBoardView} from './ui/board-view.js';
+import {createBoardRealtimeClient} from './realtime/board-realtime-client.js';
+import {BoardEvents} from './events/board-event.js';
 
-// BoardApp: orchestrates BoardApiClient (HTTP) + BoardState (local truth) +
-// BoardView (SVG projection). This module owns wiring only — no HTTP calls
-// and no direct DOM business logic live here beyond reading input values.
+// BoardApp: orchestrates BoardApiClient (HTTP) + BoardRealtimeClient (STOMP) +
+// BoardState (local truth) + BoardView (SVG projection). This module owns
+// wiring only — no HTTP calls, no STOMP destinations and no direct DOM
+// business logic beyond reading input values.
+//
+// Lab #6 keeps the two transports strictly separate here: REST still creates,
+// loads and snapshots the Board, while STOMP only carries live changes.
 const state = createBoardState();
 const view = createBoardView(document.querySelector('#boardCanvas'));
 const $ = id => document.getElementById(id);
 let connecting = false;
+let liveStatus = 'disconnected';
+
+// Per-tab identity, in sessionStorage rather than localStorage: two windows of
+// the same browser must count as two different collaborators during the demo,
+// and localStorage is shared by every tab of the same origin. It survives a
+// reload of the tab, which keeps the actor stable across step 9 of the demo.
+const actorId = sessionStorage.getItem('arsw-actor-id') ?? `client-${crypto.randomUUID().slice(0, 8)}`;
+sessionStorage.setItem('arsw-actor-id', actorId);
 
 const ACTION_BUTTON_IDS = ['newBoardBtn', 'loadBtn', 'saveBtn', 'addRectBtn', 'addTextBtn', 'connectBtn', 'deleteBtn'];
+
+const realtime = createBoardRealtimeClient({
+  onStatus(status) { liveStatus = status; refresh(); },
+
+  // The arrival of a remote change is a state transition followed by a
+  // re-render. This callback must never touch the SVG: BoardView rebuilds the
+  // canvas from the snapshot, so anything drawn here would be a second copy of
+  // the state and would vanish on the next render.
+  onEvent(event) {
+    try {
+      state.applyEvent(event);
+      // Naming the origin makes the round trip visible during the demo: an
+      // event from another actor is a collaborator's change, while one from
+      // this actor is the server confirming what we published.
+      refresh(event.actorId === actorId
+        ? `${event.type} confirmed by the server`
+        : `${event.type} applied from ${event.actorId}`);
+    } catch (error) {
+      // One unusable message must not end the session, so it is reported and
+      // the subscription keeps running.
+      console.error('Ignored an incoming board event', event, error);
+      refresh(`Ignored an incoming event: ${error.message}`);
+    }
+  }
+});
 
 function refresh(message = '') {
   const s = state.snapshot();
   view.render(s);
   $('remoteStatus').textContent = s.remote.status;
+  $('liveStatus').textContent = liveStatus;
+  $('actorId').textContent = actorId;
   $('message').textContent = message || s.remote.error?.message || '';
   $('retryBtn').hidden = !s.remote.lastAction || s.remote.status !== 'error';
 
   const isBusy = s.remote.status === 'loading';
   ACTION_BUTTON_IDS.forEach(id => { $(id).disabled = isBusy; });
   $('retryBtn').disabled = isBusy;
+
+  // Live collaboration needs a Board to subscribe to, so it stays unavailable
+  // until REST has created or loaded one.
+  const isLive = realtime.isConnected();
+  $('connectLiveBtn').disabled = isBusy || !s.board.id || isLive;
+  $('disconnectLiveBtn').disabled = !isLive;
 }
 
 // The id and name fields belong to the user while they type, so refresh()
@@ -59,15 +106,41 @@ async function remote(label, action) {
   }
 }
 
+// Local-first: the interaction has already been applied to BoardState, and the
+// event only tells the other participants about it. Without a live channel the
+// action simply stays local, exactly as it behaved in Lab #5.
+//
+// `build` receives the boardId and returns a BoardEvent. Everything STOMP —
+// destination, serialization, connection check — stays inside
+// BoardRealtimeClient, so this module never names a topic.
+function publish(label, build) {
+  const {board} = state.snapshot();
+  if (!board.id || !realtime.isConnected()) return `${label} (local only)`;
+  try {
+    realtime.publish(build(board.id));
+    return `${label} and published`;
+  } catch (error) {
+    return `${label}, but publishing failed: ${error.message}`;
+  }
+}
+
 view.on({
   select(id) { state.select(id); refresh(); },
+
+  // Dragging stays local while it happens: only the final position is worth
+  // announcing, and it arrives through moveEnd.
   move(id, x, y) { state.select(id); state.moveSelected(x, y); refresh(); },
+
+  moveEnd(id, x, y) {
+    refresh(publish('Moved', boardId => BoardEvents.elementMoved(boardId, actorId, id, x, y)));
+  },
+
   connectTarget(id) {
-    if (connecting) {
-      state.completeConnect(id);
-      connecting = false;
-      refresh('Connector created locally. Save to persist.');
-    }
+    if (!connecting) return;
+    const connector = state.completeConnect(id);
+    connecting = false;
+    if (!connector) { refresh('Connector discarded: pick two different elements'); return; }
+    refresh(publish('Connector created', boardId => BoardEvents.connectorCreated(boardId, actorId, connector)));
   }
 });
 
@@ -79,7 +152,7 @@ $('newBoardBtn').onclick = () => {
     const board = await BoardApiClient.create(name);
     state.setBoard(board);
     showBoardInputs(board);
-    return 'Board created';
+    return 'Board created. Connect live to collaborate.';
   });
 };
 $('loadBtn').onclick = () => {
@@ -88,7 +161,7 @@ $('loadBtn').onclick = () => {
     const board = await BoardApiClient.load(id);
     state.setBoard(board);
     showBoardInputs(board);
-    return 'Board loaded';
+    return 'Board loaded. Connect live to collaborate.';
   });
 };
 $('saveBtn').onclick = () => {
@@ -97,16 +170,44 @@ $('saveBtn').onclick = () => {
     const board = await BoardApiClient.save(state.toPersistedBoard());
     state.setBoard(board);
     showBoardInputs(board);
-    return 'Board saved';
+    return 'Snapshot saved';
   });
 };
 $('retryBtn').onclick = () => {
   const action = state.snapshot().remote.lastAction;
   if (action) remote('Retrying', action);
 };
-$('addRectBtn').onclick = () => { state.addRectangle(); refresh('Rectangle added locally'); };
-$('addTextBtn').onclick = () => { state.addText(); refresh('Text added locally'); };
+
+// The live channel is opened explicitly, so the REST bootstrap and the
+// subscription stay observable as two separate steps during the demo.
+$('connectLiveBtn').onclick = async () => {
+  const {board} = state.snapshot();
+  try {
+    await realtime.connect(board.id);
+    refresh(`Subscribed to /topic/boards/${board.id}`);
+  } catch (error) {
+    liveStatus = 'error';
+    refresh(`Live connection failed: ${error.message}`);
+  }
+};
+$('disconnectLiveBtn').onclick = async () => {
+  await realtime.disconnect();
+  refresh('Live collaboration disconnected');
+};
+
+$('addRectBtn').onclick = () => {
+  const element = state.addRectangle();
+  refresh(publish('Rectangle added', boardId => BoardEvents.elementCreated(boardId, actorId, element)));
+};
+$('addTextBtn').onclick = () => {
+  const element = state.addText();
+  refresh(publish('Text added', boardId => BoardEvents.elementCreated(boardId, actorId, element)));
+};
 $('connectBtn').onclick = () => { state.beginConnect(); connecting = true; refresh('Select the target element'); };
-$('deleteBtn').onclick = () => { state.removeSelected(); refresh('Element removed locally'); };
+$('deleteBtn').onclick = () => {
+  const removed = state.removeSelected();
+  if (!removed) { refresh('Select an element first'); return; }
+  refresh(publish('Element removed', boardId => BoardEvents.elementDeleted(boardId, actorId, removed)));
+};
 
 refresh();
