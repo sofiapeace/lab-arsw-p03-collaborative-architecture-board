@@ -184,7 +184,9 @@ $('connectLiveBtn').onclick = async () => {
   const {board} = state.snapshot();
   try {
     await realtime.connect(board.id);
-    refresh(`Subscribed to /topic/boards/${board.id}`);
+    // The destination is reported by the transport module, not built here:
+    // app.js orchestrates and must not know how a STOMP topic is spelled.
+    refresh(`Subscribed to ${realtime.topic()}`);
   } catch (error) {
     liveStatus = 'error';
     refresh(`Live connection failed: ${error.message}`);

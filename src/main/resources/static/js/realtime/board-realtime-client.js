@@ -98,6 +98,9 @@ export function createBoardRealtimeClient({ onEvent = () => {}, onStatus = () =>
     publish,
     disconnect,
     isConnected() { return Boolean(client?.connected); },
-    boardId() { return currentBoardId; }
+    boardId() { return currentBoardId; },
+    // Lets the UI show where it is subscribed without building the
+    // destination itself, which would put a STOMP detail back into app.js.
+    topic() { return currentBoardId ? `/topic/boards/${currentBoardId}` : null; }
   };
 }
