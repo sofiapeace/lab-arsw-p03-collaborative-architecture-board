@@ -10,6 +10,32 @@ export function createBoardState() {
   let connectSourceId = null;
   let remote = { status: 'idle', lastAction: null, error: null };
 
+  // Insert or replace by id. Lab #6 needs the "replace" half because a client
+  // also receives back the events it published: the element is already there
+  // locally, and the authoritative copy from the server must overwrite the
+  // optimistic one instead of being appended as a duplicate.
+  function upsert(element) {
+    const incoming = structuredClone(element);
+    const known = board.elements.some(e => e.id === incoming.id);
+    board = known
+      ? { ...board, elements: board.elements.map(e => e.id === incoming.id ? incoming : e) }
+      : { ...board, elements: [...board.elements, incoming] };
+  }
+
+  // Drop an element together with every connector that referenced it, so the
+  // board never holds a dangling connector (the backend Board invariant would
+  // reject that state anyway). Also forgets it as selection/connection source,
+  // which matters when the element was deleted by somebody else.
+  function forget(elementId) {
+    board = {
+      ...board,
+      elements: board.elements.filter(e =>
+        e.id !== elementId && e.sourceId !== elementId && e.targetId !== elementId)
+    };
+    if (selectedId === elementId) selectedId = null;
+    if (connectSourceId === elementId) connectSourceId = null;
+  }
+
   return {
     snapshot() {
       // lastAction holds a closure (needed by the Retry button) — functions
@@ -60,13 +86,60 @@ export function createBoardState() {
     },
 
     removeSelected() {
-      if (!selectedId) return;
+      if (!selectedId) return null;
       const removed = selectedId;
-      // Also drop any connector that referenced the removed element, so we
-      // never leave a dangling connector (Board.validateConnectors on the
-      // backend would reject it anyway when saving).
-      board = { ...board, elements: board.elements.filter(e => e.id !== removed && e.sourceId !== removed && e.targetId !== removed) };
-      selectedId = null;
+      forget(removed);
+      return removed;
+    },
+
+    // Lab #6 — the arrival of a remote change is a state transition, never a
+    // DOM mutation. The STOMP callback hands the event here and then asks the
+    // view to re-render the resulting snapshot, so the SVG stays a projection
+    // of the state and never becomes a second, divergent copy of it.
+    //
+    // Every case is idempotent on purpose. A client is subscribed to the same
+    // topic it publishes to, so it receives its own accepted events back, and
+    // a reconnection can replay one. Applying an event twice must leave the
+    // board exactly as applying it once.
+    applyEvent(event) {
+      const payload = event?.payload;
+      if (!event?.type || !payload) throw new Error('A BoardEvent requires a type and a payload');
+
+      switch (event.type) {
+        case 'ELEMENT_CREATED':
+        case 'CONNECTOR_CREATED':
+        case 'ELEMENT_UPDATED': {
+          if (!payload.element?.id) throw new Error(`${event.type} requires payload.element`);
+          upsert(payload.element);
+          break;
+        }
+
+        case 'ELEMENT_MOVED': {
+          const { elementId, x, y } = payload;
+          if (!elementId || x == null || y == null) {
+            throw new Error('ELEMENT_MOVED requires payload.elementId, payload.x and payload.y');
+          }
+          // The position is absolute, not a delta, which is what makes a
+          // repeated MOVE harmless: re-applying the final position is a no-op.
+          board = {
+            ...board,
+            elements: board.elements.map(e =>
+              e.id === elementId && e.type !== 'CONNECTOR' ? { ...e, x, y } : e)
+          };
+          break;
+        }
+
+        case 'ELEMENT_DELETED': {
+          if (!payload.elementId) throw new Error('ELEMENT_DELETED requires payload.elementId');
+          // Already-gone is the expected outcome, so a repeated delete simply
+          // finds nothing to remove.
+          forget(payload.elementId);
+          break;
+        }
+
+        default:
+          throw new Error(`Unsupported BoardEvent type: ${event.type}`);
+      }
     },
 
     toPersistedBoard() { return structuredClone(board); }

@@ -10,7 +10,7 @@ function center(e) { return { x: e.x + e.width / 2, y: e.y + e.height / 2 }; }
 // render() clears the canvas and rebuilds it from scratch, so the DOM never
 // becomes a second, divergent copy of the business state.
 export function createBoardView(canvas) {
-  let handlers = { select: () => {}, move: () => {}, connectTarget: () => {} };
+  let handlers = { select: () => {}, move: () => {}, moveEnd: () => {}, connectTarget: () => {} };
   let drag = null;
 
   function render(snapshot) {
@@ -55,9 +55,21 @@ export function createBoardView(canvas) {
     const pt = canvas.createSVGPoint();
     pt.x = ev.clientX; pt.y = ev.clientY;
     const p = pt.matrixTransform(canvas.getScreenCTM().inverse());
+    // Remember the last position so pointerup can report where the drag
+    // actually ended without recomputing it from the event.
+    drag.lastX = p.x;
+    drag.lastY = p.y;
     handlers.move(drag.id, p.x, p.y);
   });
-  canvas.addEventListener('pointerup', () => { drag = null; });
+  // Lab #6: the move is announced once, when the gesture finishes. Publishing
+  // every pointermove would flood the topic with intermediate positions that
+  // no collaborator needs; the final position is the whole change.
+  canvas.addEventListener('pointerup', () => {
+    // lastX is undefined when the pointer never moved, i.e. it was a click and
+    // not a drag, so there is no movement to announce.
+    if (drag && drag.lastX !== undefined) handlers.moveEnd(drag.id, drag.lastX, drag.lastY);
+    drag = null;
+  });
 
   return { render, on(next) { handlers = { ...handlers, ...next }; } };
 }
