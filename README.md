@@ -111,7 +111,8 @@ Detalles que ayudan a leer la pantalla:
 > ponerse al día usa **Load** (REST). No hay historial de eventos — está fuera
 > del alcance de este laboratorio.
 
-Evidencia visual del flujo: [`docs/evidence/`](docs/evidence/).
+Evidencia visual del flujo: [`docs/evidence/`](docs/evidence/). Guion paso a paso para
+repetir la demo en vivo: [`docs/live-demo.md`](docs/live-demo.md).
 
 ## 5. Cómo ejecutar las pruebas
 
