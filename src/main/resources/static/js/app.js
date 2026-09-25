@@ -34,6 +34,13 @@ const realtime = createBoardRealtimeClient({
   // canvas from the snapshot, so anything drawn here would be a second copy of
   // the state and would vanish on the next render.
   onEvent(event) {
+    // Client-side mirror of the server check: an event for a board other than
+    // the one on screen is never applied to it. closeLiveChannelIfBoardChanged
+    // prevents the case; this guard keeps a late frame from slipping through.
+    if (event.boardId !== state.snapshot().board.id) {
+      console.warn('Ignored an event for another board', event.boardId);
+      return;
+    }
     try {
       state.applyEvent(event);
       // Naming the origin makes the round trip visible during the demo: an
@@ -79,6 +86,17 @@ function refresh(message = '') {
 function showBoardInputs(board) {
   $('boardId').value = board.id;
   $('boardName').value = board.name;
+}
+
+// A live channel belongs to one Board. When New or Load brings a different
+// Board, the old subscription would keep delivering the previous Board's
+// events onto the new one (and a Save would then persist them in the wrong
+// Board), so it is closed and the user connects again explicitly. Loading the
+// same Board keeps the channel open.
+async function closeLiveChannelIfBoardChanged(boardId) {
+  if (realtime.isConnected() && realtime.boardId() !== boardId) {
+    await realtime.disconnect();
+  }
 }
 
 // `action` must both call the API and apply its result to the state, so that
@@ -150,6 +168,7 @@ $('newBoardBtn').onclick = () => {
   const name = $('boardName').value.trim();
   remote('Creating', async () => {
     const board = await BoardApiClient.create(name);
+    await closeLiveChannelIfBoardChanged(board.id);
     state.setBoard(board);
     showBoardInputs(board);
     return 'Board created. Connect live to collaborate.';
@@ -159,6 +178,7 @@ $('loadBtn').onclick = () => {
   const id = $('boardId').value.trim();
   remote('Loading', async () => {
     const board = await BoardApiClient.load(id);
+    await closeLiveChannelIfBoardChanged(board.id);
     state.setBoard(board);
     showBoardInputs(board);
     return 'Board loaded. Connect live to collaborate.';

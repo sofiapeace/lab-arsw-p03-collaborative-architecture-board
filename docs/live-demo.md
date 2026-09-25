@@ -166,11 +166,12 @@ aceptando lo que esa misma ventana publicó.
 - **Qué demuestra:** los eventos de un Board no aparecen en otro `boardId`.
   Cada Board tiene su propio destino `/topic/boards/{boardId}`.
 
-> **No hagan este paso cambiando de Board en A o en B.** Si una ventana que
-> está en `LIVE: connected` usa **Load** o **New** con otro Board, sigue
-> suscrita al topic del Board anterior y hoy aplica esos eventos sobre el
-> Board nuevo (ver la sección 6). Usen siempre una ventana C aparte, o pulsen
-> **Disconnect** antes de cambiar de Board.
+> **Si el profesor pide cambiar de Board en una ventana que ya está en vivo**
+> (usar **Load** o **New** con otro Board en A o en B): esa ventana cierra sola
+> el canal del Board anterior y pasa a `LIVE: disconnected`, para no aplicar
+> eventos de un Board sobre otro. Pulsen **Connect live** y quedará suscrita al
+> Board nuevo, sin recibir nada del anterior. Cargar otra vez el **mismo**
+> Board no la desconecta.
 
 ### Paso 9 — Recargar y recuperar el estado por REST
 
@@ -208,8 +209,7 @@ Chrome no muestra los frames anteriores.
 | **Connect live** está deshabilitado | Todavía no hay Board | Crear (**New**) o cargar (**Load**) uno primero |
 | `LIVE: error` o `Live connection failed: ...` | El servidor no está corriendo o se cayó | Revisar la terminal del servidor y volver a pulsar **Connect live** |
 | Los cambios no llegan a la otra ventana | Las dos ventanas no están en el mismo `boardId`, o una no está en `LIVE: connected` | Comparar el `boardId` de las dos y conectar la que falte |
-| El mensaje dice `..., but publishing failed: Event targets board ...` | Se usó **Load** o **New** con otro Board sin desconectarse: el canal sigue en el Board anterior | Pulsar **Disconnect** y luego **Connect live** |
-| En una ventana aparecen elementos que no son de su Board | Misma causa: la ventana cambió de Board estando conectada y aplica los eventos del Board anterior sobre el nuevo | **No pulsar Save snapshot** (guardaría esos elementos en el Board equivocado). Pulsar **Disconnect**, luego **Load** para recuperar el Board real y **Connect live** |
+| Después de **New** o **Load**, `LIVE` pasó a `disconnected` | Es intencional: se cambió a otro Board y el canal en vivo pertenece a un solo Board | Pulsar **Connect live** para suscribirse al Board nuevo |
 | Un cambio dice `(local only)` | Esa ventana no estaba conectada en vivo cuando se hizo | Conectar y usar **Load** para ponerse al día. Un cliente desconectado se pierde los eventos y no hay historial |
 | En el Modo B la página no carga desde el otro computador | Firewall o red que aísla equipos | Permitir Java en el firewall, probar con el hotspot de un celular o pasar al Modo A |
 

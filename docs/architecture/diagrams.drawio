@@ -151,8 +151,8 @@
         <mxCell id="grpb" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#999999;dashed=1;fontSize=12;align=left;verticalAlign=top;spacingLeft=180;spacingTop=4;fontColor=#666666;" value="&lt;b&gt;Backend&lt;/b&gt; — edu.eci.arsw.collabboard" vertex="1">
           <mxGeometry height="820" width="1560" x="20" y="510" as="geometry" />
         </mxCell>
-        <mxCell id="m_app" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F8FC;strokeColor=#6C8EBF;fontSize=11;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;" value="&amp;laquo;module&amp;raquo; &lt;b&gt;BoardApp&lt;/b&gt; &lt;i&gt;(app.js)&lt;/i&gt;&lt;br&gt;&lt;br&gt;- state: BoardState&lt;br&gt;- view: BoardView&lt;br&gt;- &lt;b&gt;realtime: BoardRealtimeClient&lt;/b&gt;&lt;br&gt;- &lt;b&gt;actorId: string (sessionStorage)&lt;/b&gt;&lt;br&gt;&lt;br&gt;- remote(label, action): Promise&lt;br&gt;- &lt;b&gt;publish(label, build): string&lt;/b&gt;&lt;br&gt;- refresh(message)&lt;br&gt;- showBoardInputs(board)" vertex="1">
-          <mxGeometry height="175" width="330" x="450" y="45" as="geometry" />
+        <mxCell id="m_app" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F8FC;strokeColor=#6C8EBF;fontSize=11;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;" value="&amp;laquo;module&amp;raquo; &lt;b&gt;BoardApp&lt;/b&gt; &lt;i&gt;(app.js)&lt;/i&gt;&lt;br&gt;&lt;br&gt;- state: BoardState&lt;br&gt;- view: BoardView&lt;br&gt;- &lt;b&gt;realtime: BoardRealtimeClient&lt;/b&gt;&lt;br&gt;- &lt;b&gt;actorId: string (sessionStorage)&lt;/b&gt;&lt;br&gt;&lt;br&gt;- remote(label, action): Promise&lt;br&gt;- &lt;b&gt;publish(label, build): string&lt;/b&gt;&lt;br&gt;- refresh(message)&lt;br&gt;- showBoardInputs(board)&lt;br&gt;- &lt;b&gt;closeLiveChannelIfBoardChanged(boardId)&lt;/b&gt;" vertex="1">
+          <mxGeometry height="190" width="330" x="450" y="45" as="geometry" />
         </mxCell>
         <mxCell id="m_api" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F8FC;strokeColor=#6C8EBF;fontSize=11;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;" value="&amp;laquo;module&amp;raquo; &lt;b&gt;BoardApiClient&lt;/b&gt;&lt;br&gt;&lt;br&gt;+ create(name): Board&lt;br&gt;+ load(id): Board&lt;br&gt;+ save(board): Board" vertex="1">
           <mxGeometry height="100" width="220" x="40" y="260" as="geometry" />
@@ -223,7 +223,7 @@
         <mxCell id="c_leg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontSize=11;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;" value="&lt;b&gt;Leyenda&lt;/b&gt;&lt;br&gt;&amp;#8213;&amp;#8213;&amp;gt; asociación / dependencia (import)&lt;br&gt;- - -&amp;#9651; realización (implements)&lt;br&gt;&amp;#9670;&amp;#8213;&amp;#8213; composición (contiene)&lt;br&gt;- - -&amp;gt; lanza / dependencia débil&lt;br&gt;&lt;font color=&quot;#6C8EBF&quot;&gt;&lt;b&gt;- - -&amp;gt;&lt;/b&gt;&lt;/font&gt; HTTP/JSON (no hay import: contrato REST)&lt;br&gt;&lt;font color=&quot;#82B366&quot;&gt;&lt;b&gt;- - -&amp;gt;&lt;/b&gt;&lt;/font&gt; STOMP sobre WebSocket (no hay import: contrato de eventos, docs/event-contract.md)&lt;br&gt;&lt;font color=&quot;#82B366&quot;&gt;&lt;b&gt;Borde verde&lt;/b&gt;&lt;/font&gt; = clase o módulo nuevo del Lab #6 &amp;nbsp;·&amp;nbsp; &lt;b&gt;negrita&lt;/b&gt; = miembro agregado en el Lab #6 a una clase existente&lt;br&gt;&lt;br&gt;BoardView no importa BoardState ni BoardApiClient: recibe snapshots y emite intents por callbacks registrados con on().&lt;br&gt;BoardRealtimeClient no importa BoardEvents: BoardApp construye el sobre y el cliente en tiempo real solo lo serializa y lo envía.&lt;br&gt;/topic/boards/{id} lo atiende el broker simple que habilita WebSocketConfig; BoardWebSocketController publica ahí solo si el evento fue aceptado.&lt;br&gt;No se incluyen ApiError, GlobalExceptionHandler ni los DTO de request: son detalles de transporte HTTP." vertex="1">
           <mxGeometry height="190" width="1000" x="20" y="1360" as="geometry" />
         </mxCell>
-        <mxCell id="d1" edge="1" parent="1" source="m_app" target="m_api" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.371;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="usa">
+        <mxCell id="d1" edge="1" parent="1" source="m_app" target="m_api" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.3421;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="usa">
           <mxGeometry relative="1" as="geometry">
             <Array as="points"><mxPoint x="150" y="110" /></Array>
           </mxGeometry>
@@ -236,12 +236,12 @@
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
-        <mxCell id="d3b" edge="1" parent="1" source="m_app" target="m_events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.4857;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="usa">
+        <mxCell id="d3b" edge="1" parent="1" source="m_app" target="m_events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.4474;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="usa">
           <mxGeometry relative="1" as="geometry">
             <Array as="points"><mxPoint x="1050" y="130" /></Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="d3c" edge="1" parent="1" source="m_app" target="m_rt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.1714;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="usa">
+        <mxCell id="d3c" edge="1" parent="1" source="m_app" target="m_rt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.1579;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="usa">
           <mxGeometry relative="1" as="geometry">
             <Array as="points"><mxPoint x="1390" y="75" /></Array>
           </mxGeometry>

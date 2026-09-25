@@ -106,6 +106,10 @@ Detalles que ayudan a leer la pantalla:
   cuando es de un colaborador, y `confirmed by the server` cuando es el
   servidor aceptando lo que usted mismo publicó.
 - El movimiento se publica **al soltar el arrastre**, no en cada píxel.
+- El canal en vivo pertenece a un solo Board: si **New** o **Load** traen un
+  Board distinto, la ventana cierra el canal anterior (`LIVE` pasa a
+  `disconnected`) y hay que pulsar **Connect live** otra vez. Así nunca aplica
+  eventos de un Board sobre otro.
 
 > Un cliente desconectado se pierde los eventos publicados mientras tanto: para
 > ponerse al día usa **Load** (REST). No hay historial de eventos — está fuera
