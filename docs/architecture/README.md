@@ -2,8 +2,8 @@
 
 | Artifact | File | Content |
 |---|---|---|
-| ArchiMate Application View | [`diagrams.drawio`](diagrams.drawio) — page **"ArchiMate Application View"** | Web Client (BoardApp, BoardState, BoardView, BoardApiClient, BoardRealtimeClient) and two application interfaces side by side: REST `/api/boards` → BoardRestController → BoardApplicationService, and WebSocket/STOMP `/ws` (`SEND /app/boards/{id}/events`, `SUBSCRIBE /topic/boards/{id}`) → BoardWebSocketController → BoardEventApplicationService. Both services reach the same BoardRepository (port) → InMemoryBoardRepository → in-memory Board data. Includes the BoardEvent data object and the five-step live flow |
-| Class / module diagram | [`diagrams.drawio`](diagrams.drawio) — page **"Class Diagram"** | Client modules and their import direction (including `BoardRealtimeClient` and `BoardEvents`), the backend classes, the event contract (`BoardEvent`, `BoardEventType`, `BoardEventPayload`), the STOMP adapter and its configuration (`BoardWebSocketController`, `WebSocketConfig`), `BoardEventApplicationService`, and how they relate to the domain model (`Board`, `BoardElement`, `ElementType`). Lab #6 additions have a green border |
+| ArchiMate Application View | [`diagrams.drawio`](diagrams.drawio) — page **"ArchiMate Application View"** · PNG: [`archimate-application-view.png`](archimate-application-view.png) | Web Client (BoardApp, BoardState, BoardView, BoardApiClient, BoardRealtimeClient) and two application interfaces side by side: REST `/api/boards` → BoardRestController → BoardApplicationService, and WebSocket/STOMP `/ws` (`SEND /app/boards/{id}/events`, `SUBSCRIBE /topic/boards/{id}`) → BoardWebSocketController → BoardEventApplicationService. Both services reach the same BoardRepository (port) → InMemoryBoardRepository → in-memory Board data. Includes the BoardEvent data object and the five-step live flow |
+| Class / module diagram | [`diagrams.drawio`](diagrams.drawio) — page **"Class Diagram"** · PNG: [`class-diagram.png`](class-diagram.png) | Client modules and their import direction (including `BoardRealtimeClient` and `BoardEvents`), the backend classes, the event contract (`BoardEvent`, `BoardEventType`, `BoardEventPayload`), the STOMP adapter and its configuration (`BoardWebSocketController`, `WebSocketConfig`), `BoardEventApplicationService`, and how they relate to the domain model (`Board`, `BoardElement`, `ElementType`). Lab #6 additions have a green border |
 | REST contract | [`api-contract.md`](api-contract.md) | Endpoints, Board/element shapes, connector invariants and error codes |
 | ADR-001 — repository boundary | [`../ADR-001-repository-boundary.md`](../ADR-001-repository-boundary.md) | Where the port/adapter boundary sits and who may depend on whom |
 | ADR-002 — client boundaries | [`../ADR-002-client-boundaries.md`](../ADR-002-client-boundaries.md) | Why the client is split into API client, state and view |
@@ -12,6 +12,16 @@
 | Visual evidence | [`../evidence/`](../evidence/) | Lab #6: the nine demo steps captured in three isolated browsers, with STOMP frame counts per window. Lab #5: a board with two connected elements, saved and reloaded |
 
 Open `diagrams.drawio` with [draw.io](https://app.diagrams.net) (or the VS Code Draw.io extension). The file has two pages, selectable at the bottom of the editor.
+
+The PNGs below are exports of those two pages, so the diagrams can be read on GitHub without draw.io. `diagrams.drawio` is the source: after editing it, export both pages again so the images do not drift from it.
+
+### ArchiMate Application View
+
+![ArchiMate application view: web client, REST and WebSocket/STOMP interfaces, application services and repository](archimate-application-view.png)
+
+### Class / module diagram
+
+![Class and module diagram: client modules, backend classes, event contract and domain model](class-diagram.png)
 
 ## Quality rule
 

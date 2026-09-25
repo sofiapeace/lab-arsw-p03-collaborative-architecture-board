@@ -235,8 +235,8 @@ ningún suscriptor.
 
 | Artefacto            | Ubicación                                   |
 |-----------------------|----------------------------------------------|
-| Vista ArchiMate        | `docs/architecture/diagrams.drawio` (página "ArchiMate Application View") |
-| Diagrama de clases/módulos | `docs/architecture/diagrams.drawio` (página "Class Diagram") |
+| Vista ArchiMate        | `docs/architecture/diagrams.drawio` (página "ArchiMate Application View") · imagen: [`archimate-application-view.png`](docs/architecture/archimate-application-view.png) |
+| Diagrama de clases/módulos | `docs/architecture/diagrams.drawio` (página "Class Diagram") · imagen: [`class-diagram.png`](docs/architecture/class-diagram.png) |
 | Contrato REST          | `docs/architecture/api-contract.md`           |
 | Contrato de eventos    | `docs/event-contract.md`                      |
 | ADR-001                | `docs/ADR-001-repository-boundary.md`         |
