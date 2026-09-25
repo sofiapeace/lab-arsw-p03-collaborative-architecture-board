@@ -171,8 +171,14 @@ Negative:
   regression suite, unchanged).
 - **Manual verification with three browser windows** against
   `mvn spring-boot:run`: two windows on the same `boardId` propagated create,
-  move, connector and delete in both directions; deleting a connected element
-  took both clients from 3 nodes + 1 connector to 1 node + 0 connectors; a
-  third window on a different `boardId` stayed at 0 elements while the first
-  two reached 3; and reloading one window recovered the accumulated state over
-  REST. Screenshots in [`evidence/`](evidence/).
+  move, connector and delete in both directions, a third window on a different
+  `boardId` received nothing, and reloading one window recovered the
+  accumulated state over REST.
+- **Recorded run of the nine demo steps**, with three isolated browser
+  contexts: deleting the connected rectangle took both clients from 3 nodes +
+  1 connector to 2 nodes + 0 connectors; the third window, live on another
+  Board from the start, received 0 STOMP `MESSAGE` frames while the first two
+  received the same 7 accepted events; and after a reload one
+  `GET /api/boards/{id}` returned the same elements and positions the other
+  window had, without any Save. Screenshots and frame counts in
+  [`evidence/`](evidence/).

@@ -1,0 +1,111 @@
+{
+  "boardId": "e5fe4974-78a3-419b-9e42-864c0137508b",
+  "otherBoardId": "2fc3a561-5dc2-4165-9706-7f9352d7a605",
+  "actors": {
+    "A": "client-51ff8993",
+    "B": "client-8e5678e6",
+    "C": "client-afdc28eb"
+  },
+  "ids": {
+    "r1": "rect-12258fba-5f6c-41e2-9f2b-19698c255e4b",
+    "r2": "rect-7ebac6fd-383b-4f3f-b533-a69207a40ea2",
+    "t1": "text-f583ad41-683e-4344-b87f-934a60eb745e"
+  },
+  "connectorAfterStep6": {
+    "A": [
+      {
+        "id": "conn-a7570e6f-f0cf-4422-be5a-ad552f73f4ac",
+        "from": [
+          197,
+          137
+        ],
+        "to": [
+          405,
+          405
+        ]
+      }
+    ],
+    "B": [
+      {
+        "id": "conn-a7570e6f-f0cf-4422-be5a-ad552f73f4ac",
+        "from": [
+          197,
+          137
+        ],
+        "to": [
+          405,
+          405
+        ]
+      }
+    ]
+  },
+  "reloadedStateMatchesA": true,
+  "restCallsB": [
+    "GET /api/boards/e5fe4974-78a3-419b-9e42-864c0137508b -> 200",
+    "GET /api/boards/e5fe4974-78a3-419b-9e42-864c0137508b -> 200"
+  ],
+  "restCallsBAfterReload": [
+    "GET /api/boards/e5fe4974-78a3-419b-9e42-864c0137508b -> 200"
+  ],
+  "stomp": {
+    "A": {
+      "sends": 4,
+      "messages": 7,
+      "byDestination": {
+        "/topic/boards/e5fe4974-78a3-419b-9e42-864c0137508b": 7
+      },
+      "types": [
+        "ELEMENT_CREATED",
+        "ELEMENT_MOVED",
+        "ELEMENT_CREATED",
+        "ELEMENT_CREATED",
+        "ELEMENT_MOVED",
+        "CONNECTOR_CREATED",
+        "ELEMENT_DELETED"
+      ]
+    },
+    "B": {
+      "sends": 3,
+      "messages": 7,
+      "byDestination": {
+        "/topic/boards/e5fe4974-78a3-419b-9e42-864c0137508b": 7
+      },
+      "types": [
+        "ELEMENT_CREATED",
+        "ELEMENT_MOVED",
+        "ELEMENT_CREATED",
+        "ELEMENT_CREATED",
+        "ELEMENT_MOVED",
+        "CONNECTOR_CREATED",
+        "ELEMENT_DELETED"
+      ]
+    },
+    "CUntilStep8": {
+      "sends": 0,
+      "messages": 0,
+      "byDestination": {},
+      "types": []
+    },
+    "C": {
+      "sends": 1,
+      "messages": 1,
+      "byDestination": {
+        "/topic/boards/2fc3a561-5dc2-4165-9706-7f9352d7a605": 1
+      },
+      "types": [
+        "ELEMENT_CREATED"
+      ]
+    }
+  },
+  "steps": [
+    "1. A crea un Board por REST",
+    "2. B carga el mismo boardId por REST",
+    "3. A y B se conectan al canal live",
+    "4. A agrega un rectángulo y aparece en B",
+    "5. B mueve el rectángulo y A ve la nueva posición",
+    "6. Se crean dos elementos y un conector; ambos navegadores lo ven",
+    "7. B elimina el rectángulo conectado; el conector se va en cascada en ambos",
+    "8. C, conectado a otro Board, no recibió nada",
+    "9. B recarga la página y recupera el snapshot por REST"
+  ]
+}
